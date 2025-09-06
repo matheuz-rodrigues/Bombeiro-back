@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  BOMBEIRO
+}
+
+enum StatusOcorrencia {
+  AGUARDANDO
+  EM_ANDAMENTO
+  CONCLUIDA
+}
+
+enum Prioridade {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+// Models simplificados
+model User {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  senha     String
+  role      Role     @default(BOMBEIRO)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relacionamentos
+  ocorrencias Ocorrencia[]
+
+  @@map("users")
+}
+
+model Ocorrencia {
+  id          Int              @id @default(autoincrement())
+  tipo        String           // Ex: "Incêndio", "Acidente", "Resgate"
+  local       String
+  descricao   String?
+  prioridade  Prioridade
+  status      StatusOcorrencia @default(AGUARDANDO)
+  dataHora    DateTime         @default(now())
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relacionamentos
+  responsavel   User @relation(fields: [responsavelId], references: [id])
+  responsavelId Int
+
+  @@map("ocorrencias")
+}
